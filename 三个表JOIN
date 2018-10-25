@@ -1,0 +1,36 @@
+*&---------------------------------------------------------------------*
+*& Report  ZBC400_00
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+REPORT ZBC400_00.
+
+**第一个，SFLIGHT,SCUSTOME,SBOOK三个进行连接，给出一个carrid、customername和customerid就可以进行信息查询
+*TABLES: SFLIGHT,SCUSTOM,SBOOK.
+*TYPES: BEGIN OF ty_sflight,
+*         carrid  type sflight-carrid,
+*         fldate  type sflight-fldate,
+*         price   type sflight-price,
+*         name    type scustom-name,
+*         city    type scustom-city,
+*         customid type sbook-customid,
+*END OF ty_sflight.
+*
+*DATA: i_flight type STANDARD TABLE OF ty_sflight INITIAL SIZE 0,
+*      wa_flight like line of i_flight.
+*
+*PARAMETERS: p_carrid type sflight-carrid,
+*            p_name   type scustom-name,
+*            p_id type sbook-customid.
+*
+*SELECT sflight~carrid, sflight~fldate,sflight~price,scustom~name,scustom~city,sbook~customid
+*  FROM sbook inner join sflight on sbook~carrid = sflight~carrid
+*             inner join scustom on sbook~customid = scustom~id
+*  INTO TABLE @i_flight
+*  WHERE sflight~carrid = @p_carrid and scustom~name = @p_name and sbook~customid = @p_id.
+*
+*LOOP AT i_flight into wa_flight.
+*  write: / wa_flight-carrid, wa_flight-fldate,wa_flight-price,wa_flight-name,wa_flight-city,wa_flight-customid.
+*ENDLOOP.
