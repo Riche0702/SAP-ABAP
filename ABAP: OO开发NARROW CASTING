@@ -1,0 +1,44 @@
+**第四个程序： OO实现程序 NARROW CASTING(UP CASTING)
+*
+*CLASS lcl_animal DEFINITION.
+*  PUBLIC SECTION.
+*   METHODS: hungry.
+*ENDCLASS.
+*
+*CLASS lcl_lion DEFINITION INHERITING FROM lcl_animal.
+*  PUBLIC SECTION.
+*    METHODS: hungry REDEFINITION,
+*             fasting.
+*ENDCLASS.
+*
+*CLASS lcl_animal IMPLEMENTATION.
+*  METHOD: hungry.
+*    WRITE: / 'An animal is hungry.'.
+*  ENDMETHOD.
+*ENDCLASS.
+*
+*CLASS lcl_lion IMPLEMENTATION.
+*  METHOD hungry.
+*    WRITE: / 'A lion is hungry.',
+*             'Run as fast as you can..'.
+*  ENDMETHOD.
+*  METHOD fasting.
+*    WRITE: / 'Stop running. Lion is on Fasting today.'.
+*  ENDMETHOD.
+*ENDCLASS.
+*
+*START-OF-SELECTION.
+*DATA: LO_ANIMAL TYPE REF TO LCL_ANIMAL,
+*      LO_LION TYPE REF TO LCL_LION.
+*
+*WRITE: / 'Animal - without NARROW casting'.
+*CREATE OBJECT LO_ANIMAL.
+*CALL METHOD LO_ANIMAL->HUNGRY( ).
+*CLEAR LO_ANIMAL.
+*
+*SKIP 2.
+*WRITE: / 'Animal - NARROW casting from LION'.
+*CREATE OBJECT LO_LION.
+*LO_ANIMAL = LO_LION.
+*CALL METHOD LO_ANIMAL->HUNGRY( ).
+*CALL METHOD LO_ANIMAL->('FASTING').
