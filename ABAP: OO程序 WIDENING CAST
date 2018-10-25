@@ -1,0 +1,60 @@
+**第五个程序： OO程序 WIDENING CAST(DOWN CAST)
+*CLASS lcl_animal DEFINITION.
+*  PUBLIC SECTION.
+*   METHODS: hungry.
+*ENDCLASS.
+*
+*CLASS lcl_lion DEFINITION INHERITING FROM lcl_animal.
+*  PUBLIC SECTION.
+*    METHODS: hungry REDEFINITION,
+*             fasting.
+*ENDCLASS.
+*
+*CLASS lcl_animal IMPLEMENTATION.
+*  METHOD: hungry.
+*    WRITE: / 'An animal is hungry.'.
+*  ENDMETHOD.
+*ENDCLASS.
+*
+*CLASS lcl_lion IMPLEMENTATION.
+*  METHOD hungry.
+*    WRITE: / 'A lion is hungry.',
+*             'Run as fast as you can..'.
+*  ENDMETHOD.
+*  METHOD fasting.
+*    WRITE: / 'Stop running. Lion is on Fasting today.'.
+*  ENDMETHOD.
+*ENDCLASS.
+*
+*START-OF-SELECTION.
+*  DATA: lo_animal TYPE REF TO lcl_animal,
+*        lo_lion   TYPE REF TO lcl_lion,
+*        lo_cast_error TYPE REF TO cx_sy_move_cast_error.
+*
+*
+*  DATA: lo_tmp_lion   TYPE REF TO lcl_lion.
+*  CREATE OBJECT lo_tmp_lion.
+*  lo_animal = lo_tmp_lion.
+*
+*
+*  TRY.
+*      lo_lion ?= lo_animal.
+*    CATCH cx_sy_move_cast_error INTO lo_cast_error.
+*      WRITE: / 'Widening cast failed 1'.
+*  ENDTRY.
+*  IF lo_lion IS NOT INITIAL.
+*    CALL METHOD lo_lion->hungry( ).
+*    CALL METHOD lo_lion->fasting( ).
+*  ENDIF.
+*
+*  CLEAR: lo_animal, lo_lion, lo_cast_error.
+*  CREATE OBJECT lo_animal.
+*  TRY.
+*      lo_lion ?= lo_animal.
+*    CATCH cx_sy_move_cast_error INTO lo_cast_error.
+*      WRITE: / 'Widening cast failed 2'.
+*  ENDTRY.
+*  IF lo_lion IS NOT INITIAL.
+*    CALL METHOD lo_lion->hungry( ).
+*    CALL METHOD lo_lion->fasting( ).
+*  ENDIF.
