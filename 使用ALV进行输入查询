@@ -1,0 +1,44 @@
+*第二个ALV程序开发
+*TYPE-POOLS: slis.  "定义类型池
+*TABLES: SFLIGHT,SCUSTOM,SBOOK.
+*TYPES: BEGIN OF ty_sflight,
+*         carrid  type sflight-carrid,
+*         fldate  type sflight-fldate,
+*         price   type sflight-price,
+*         name    type scustom-name,
+*         city    type scustom-city,
+*         customid type sbook-customid,
+*END OF ty_sflight.
+*
+*DATA: i_flight type STANDARD TABLE OF ty_sflight INITIAL SIZE 0,
+*      wa_flight like line of i_flight.
+*DATA: t_fieldcat TYPE slis_t_fieldcat_alv WITH HEADER LINE,
+*      i_layout TYPE slis_layout_alv.
+*
+*SELECT-OPTIONS:p_carrid FOR sflight-carrid,
+*            p_name   FOR scustom-name,
+*            p_id FOR sbook-customid.
+*
+*
+*
+*PERFORM DATA_SELECT.
+*PERFORM DATA_DISPLAY.
+*
+*FORM DATA_SELECT. " 数据选择
+*SELECT sflight~carrid, sflight~fldate,sflight~price,scustom~name,scustom~city,sbook~customid
+*  FROM sbook LEFT join sflight on sbook~carrid = sflight~carrid
+*             LEFT join scustom on sbook~customid = scustom~id
+*  INTO TABLE @i_flight
+*  WHERE sflight~carrid IN @p_carrid AND  scustom~name IN @p_name AND sbook~customid IN @p_id.
+*ENDFORM.
+*
+*FORM DATA_DISPLAY. "数据显示
+* CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+*      EXPORTING
+*          i_structure_name             = 'ZBCFLIGHT'
+*      TABLES
+*           t_outtab                 = i_flight
+*      EXCEPTIONS
+*           program_error            = 1
+*           OTHERS                   = 2.
+*ENDFORM.
