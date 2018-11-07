@@ -1,0 +1,108 @@
+REPORT ZALV_OO.
+
+TABLES: SFLIGHT,SCUSTOM,SBOOK.
+TYPES: BEGIN OF ty_sflight,
+         carrid  type sflight-carrid,
+         fldate  type sflight-fldate,
+         price   type sflight-price,
+         name    type scustom-name,
+         city    type scustom-city,
+         customid type sbook-customid,
+END OF ty_sflight.
+DATA: i_flight type STANDARD TABLE OF ty_sflight INITIAL SIZE 0.
+DATA: wa_flight like line of i_flight.
+
+RANGES: CARIN FOR sflight-carrid,
+        CNIN  FOR scustom-name,
+        CIDIN FOR sbook-CUSTOMID.
+CLEAR CARIN.
+CLEAR CNIN.
+CLEAR CIDIN.
+CARIN-SIGN   = 'I'.
+CARIN-OPTION = 'EQ'.
+CARIN-LOW    = 'AA'.
+APPEND CARIN.
+CNIN-SIGN   = 'I'.
+CNIN-OPTION = 'EQ'.
+CNIN-LOW    = 'Simon Henry'.
+APPEND CNIN.
+CIDIN-SIGN   = 'I'.
+CIDIN-OPTION = 'EQ'.
+CIDIN-LOW    = 2128.
+APPEND CIDIN.
+
+
+DATA:OK_CODE TYPE SY-UCOMM,
+     SAVE_OK TYPE OK_CODE,
+     OUTPUT TYPE OK_CODE.
+
+
+MODULE USER_COMMAND_0100 INPUT.
+  CASE OK_CODE.
+   WHEN 'OK'.
+    LEAVE TO SCREEN 0.
+      WHEN 'EXIT' OR 'CANCEL'OR'BACK'.
+          LEAVE TO SCREEN 0.
+      WHEN OTHERS.
+        OUTPUT = SAVE_OK.
+    ENDCASE.
+ENDMODULE.
+
+CLASS LCL_ALV DEFINITION."ALV 操作类定义
+  PUBLIC SECTION.
+    DATA: gr_table TYPE REF TO CL_SALV_TABLE.
+  METHODS:
+            GETDATA,
+            ALV_PROCESS.
+  methods handle_double for event double_click
+            of cl_salv_events_table importing ROW COLUMN.
+  PRIVATE SECTION.
+ENDCLASS.
+
+CLASS LCL_ALV IMPLEMENTATION. "ALV操作类实现
+  METHOD:GETDATA.
+      SELECT sflight~carrid, sflight~fldate,sflight~price,scustom~name,scustom~city,sbook~customid
+      FROM sbook LEFT join sflight on sbook~carrid = sflight~carrid
+                 LEFT join scustom on sbook~customid = scustom~id
+      INTO TABLE @i_flight
+      WHERE scustom~name = @CNIN  AND sflight~carrid = @CARIN AND  sbook~customid = @CIDIN.
+      ENDMETHOD.
+
+  METHOD ALV_PROCESS.
+    DATA: LX_MSG TYPE REF TO CX_SALV_MSG.
+    TRY.
+      CL_SALV_TABLE=>FACTORY(
+        IMPORTING
+          R_SALV_TABLE = GR_TABLE
+        CHANGING
+          T_TABLE      = i_flight
+      ).
+       set handler handle_double for GR_TABLE->get_event( ).
+       CATCH CX_SALV_MSG INTO LX_MSG.
+    ENDTRY.
+    GR_table->display( ).
+  endmethod.
+
+   method handle_double. " 功能I: 设定响应双击
+   READ TABLE I_FLIGHT INDEX ROW INTO WA_FLIGHT.
+   DATA: MSG(100).
+   CONCATENATE  '你选择的内容有： '
+               'CUSTOMNAME：  ' WA_FLIGHT-NAME  '  CUSTOMID： ' WA_FLIGHT-CUSTOMID
+               ' CARRID：  ' WA_FLIGHT-CARRID ' FLDATE：  ' WA_FLIGHT-FLDATE
+               ' CITY：  '    WA_FLIGHT-CITY INTO MSG.
+   MESSAGE MSG TYPE 'I'.
+  ENDMETHOD.
+
+ENDCLASS.
+
+
+MODULE status_0200 OUTPUT.
+SET PF-STATUS 'STATUS_BAR'.
+ENDMODULE. " STATUS_0100 OUTPUT
+
+START-OF-SELECTION.
+  CALL SCREEN 100.
+  DATA LR_ALV TYPE REF TO LCL_ALV.
+  CREATE OBJECT LR_ALV.
+  LR_ALV->GETDATA( ).
+  LR_ALV->ALV_PROCESS( ).
